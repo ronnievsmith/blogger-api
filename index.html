@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="utf-8">
+	<title>Blogger API Basic Integration Snippet</title>
+	<meta name="description" content="Blogger API Basic Integration Snippet">
+	
+	<!-- Favicons -->
+	<link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+	<link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
+	<link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+	<link rel="manifest" href="/favicons/manifest.json">
+	<link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#5bbad5">
+	<link rel="shortcut icon" href="/favicons/favicon.ico">
+	<meta name="msapplication-config" content="/favicons/browserconfig.xml">
+	<meta name="theme-color" content="#ffffff">
+	
+	<!-- CSS Styling -->
+	<style>
+		body{
+			margin:48px;
+		}
+		#results{
+			margin-top:48px;
+		}
+		#load-button{
+			margin-top:48px;
+		}
+	</style>
+</head>
+
+<body>
+    <main>
+    	<div><a href="//rack.pub">//rack.pub</a></div>
+    	<h2>Blogger API - Basic Browser Integration with Javascript</h2>
+    	<h3>Click button to load results</h3>
+    	
+        <button id="load-button">Load Results</button>
+        <section id="results"></section>
+    </main>	
+	<script type='application/ld+json'>
+		{
+			"@context": "http://www.schema.org",
+			"@type": "product",
+			"brand": "Ron Royston",
+			"name": "Blogger API Basic Browser Integration with JavaScript Snippet",
+			"image": "https://rack.pub/media/blogger-api.jpg",
+			"description": "Blogger API Basic Integration with Browser Javascript Snippet.",
+			"aggregateRating": {
+				"@type": "aggregateRating",
+				"ratingValue": "5",
+				"reviewCount": "1"
+			}
+		}
+	</script>
+
+	<script>
+		/*
+			(c) 2017, Ron Royston, MIT License
+			https://rack.pub
+        */
+		var doc = document;
+		var results = doc.getElementById('results');
+		var loadButton = doc.getElementById('load-button');
+		var blogId;
+		
+		function renderResults(response) {
+			if (response.items) {
+				//res = response;
+				for (var i = 0; i < response.items.length; i++) {
+					//do whatever you want with the posts of your blog
+					//console.log(response);
+					appendResults(response.items[i]);
+				}
+			}
+			if (response.nextPageToken) {
+				var blogId = '7146966160286076118';
+				var request = gapi.client.blogger.posts.list({
+					'blogId': blogId,
+					'pageToken': response.nextPageToken,
+					'maxResults': 100,
+				});
+				request.execute(renderResults);
+			}
+		}
+		
+		function initBloggerApi() {
+			//get this api key from google api manager and be sure to include the domain allowed
+			gapi.client.setApiKey('AIzaSyAPYqq59NDSo2DPY7RuvcGheyWs7J6xMCE');
+			gapi.client.load('blogger', 'v3', function() {
+				//get the blogId from the URL bar when viewing the blog
+				blogId = '7146966160286076118';
+				var request = gapi.client.blogger.posts.list({
+					'blogId': blogId,
+					'maxResults': 100,
+				});
+				request.execute(renderResults);
+			});
+		}
+		
+		function appendResults(obj) {
+			var h4 = doc.createElement('h4');
+			var h6 = doc.createElement('h6');
+			var div = doc.createElement('div');
+			var d = new Date(obj.published);
+			h4.className = "text-left";
+			div.className = "text-left";
+			h6.className = "text-left";
+			h4.appendChild(doc.createTextNode(obj.title));
+			h6.appendChild(doc.createTextNode(d.toDateString() + ' ' + formatAMPM(d)));
+			div.innerHTML = obj.content;
+			results.appendChild(h4);
+			results.appendChild(h6);
+			results.appendChild(div);
+		}
+		
+		function formatAMPM(date) {
+			var hours = date.getHours();
+			var minutes = date.getMinutes();
+			var ampm = hours >= 12 ? 'pm' : 'am';
+			hours = hours % 12;
+			hours = hours ? hours : 12; // the hour '0' should be '12'
+			minutes = minutes < 10 ? '0' + minutes : minutes;
+			var strTime = hours + ':' + minutes + ' ' + ampm;
+			return strTime;
+		}
+			
+		if (loadButton) {
+			loadButton.addEventListener("click", function() {
+				initBloggerApi();
+			});
+		}
+	</script>
+	<script src="https://apis.google.com/js/client.js"></script>
+</body>
+
+</html>
